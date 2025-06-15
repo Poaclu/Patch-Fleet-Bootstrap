@@ -67,12 +67,6 @@ fi
 # Set timezone
 timedatectl set-timezone "$TIMEZONE"
 
-# Deployment start notification
-curl -s -H "Content-Type: application/json" \
-  -X POST \
-  -d "{\"content\": \"🚀 Patch Fleet Bootstrap started on $(hostname)\"}" \
-  "$WEBHOOK_URL"
-
 LOGFILE="/var/log/patch-bootstrap.log"
 mkdir -p "$(dirname $LOGFILE)"
 touch $LOGFILE
