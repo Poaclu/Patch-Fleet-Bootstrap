@@ -95,7 +95,6 @@ Unattended-Upgrade::Origins-Pattern {
         "origin=Ubuntu,codename=${distro_codename}";
         "origin=Ubuntu,codename=${distro_codename}-security";
         "origin=Ubuntu,codename=${distro_codename}-updates";
-};
 EOF
  
 for vendor in $VENDORS; do
