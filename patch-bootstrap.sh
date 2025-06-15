@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Patch Fleet Bootstrap Installer v1.3-Public
+# Patch Fleet Bootstrap Installer
 
 set -e
 
@@ -8,12 +8,36 @@ set -e
 TIMEZONE="Europe/Paris"
 WEBHOOK_URL=""
 
+# Helper function
+print_help() {
+  echo "Usage: sudo ./patch-bootstrap.sh --webhook <url> [--timezone <tz>]"
+  echo
+  echo "Arguments:"
+  echo "  --webhook   Webhook URL (Discord, Notifiarr, Gotify, etc.) (required)"
+  echo "  --timezone  System timezone (optional, default: Europe/Paris)"
+  echo "  --help      Show this help"
+}
+
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --webhook) WEBHOOK_URL="$2"; shift ;;
-        --timezone) TIMEZONE="$2"; shift ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        --webhook)
+            WEBHOOK_URL="$2"
+            shift
+            ;;
+        --timezone)
+            TIMEZONE="$2"
+            shift
+            ;;
+        --help|-h)
+            print_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown parameter: $1"
+            print_help
+            exit 1
+            ;;
     esac
     shift
 done
@@ -21,14 +45,34 @@ done
 # Require webhook param
 if [[ -z "$WEBHOOK_URL" ]]; then
     echo "Error: --webhook is required"
+    print_help
     exit 1
 fi
 
+# Light sanity check (must look like URI schema)
+if [[ ! "$WEBHOOK_URL" =~ ^[a-zA-Z0-9+.-]+:// ]]; then
+    echo "Error: Provided webhook URL must start with valid URI schema (e.g. https:// or generic://)"
+    exit 1
+fi
+
+# Validate timezone
+if timedatectl list-timezones >/dev/null 2>&1; then
+    if ! timedatectl list-timezones | grep -qx "$TIMEZONE"; then
+        echo "Error: Invalid timezone provided: $TIMEZONE"
+        exit 1
+    fi
+else
+    echo "Warning: Cannot validate timezone on this system, skipping check."
+fi
+
+# Set timezone
+timedatectl set-timezone "$TIMEZONE"
+
 # Deployment start notification
-curl -H "Content-Type: application/json" \
+curl -s -H "Content-Type: application/json" \
   -X POST \
   -d "{\"content\": \"🚀 Patch Fleet Bootstrap started on $(hostname)\"}" \
-  $WEBHOOK_URL
+  "$WEBHOOK_URL"
 
 LOGFILE="/var/log/patch-bootstrap.log"
 mkdir -p "$(dirname $LOGFILE)"
@@ -93,7 +137,7 @@ EOF
 
 chmod +x /usr/local/bin/uu-daily-healthcheck
 
-# Install Discord Alert Script (uses argument)
+# Install Discord alert (generic webhook)
 cat << EOF > /usr/local/bin/uu-discord-alert
 #!/bin/bash
 WEBHOOK_URL="$WEBHOOK_URL"
@@ -104,7 +148,7 @@ unattended-upgrade --dry-run --debug > \$TMPFILE 2>&1
 
 if grep -i "error" \$TMPFILE | grep -v "ErrorText: ''"; then
     MSG="⚠️ [\$TIMESTAMP] Unattended-Upgrades ERROR Detected on \$(hostname)"
-    curl -H "Content-Type: application/json" -X POST -d "{\\"content\\": \\"\$MSG\\"}" \$WEBHOOK_URL
+    curl -s -H "Content-Type: application/json" -X POST -d "{\\"content\\": \\"\$MSG\\"}" \$WEBHOOK_URL
 else
     echo "[\$TIMESTAMP] No errors detected, all good."
 fi
@@ -124,7 +168,7 @@ EOF
 
 chmod +x /usr/local/bin/apt-lock-watchdog
 
-# Setup logrotate
+# Logrotate for healthcheck and watchdog logs
 cat << 'EOF' > /etc/logrotate.d/unattended-upgrades-healthcheck
 /var/log/unattended-upgrades/healthcheck.log {
     rotate 7
@@ -143,7 +187,7 @@ cat << 'EOF' > /etc/logrotate.d/unattended-upgrades-healthcheck
 }
 EOF
 
-# Setup systemd unattended-upgrades.timer if missing
+# Create unattended-upgrades timer if missing
 if [ ! -f /etc/systemd/system/unattended-upgrades.timer ]; then
   echo "Systemd timer not found — creating custom unattended-upgrades timer/service."
 
@@ -201,10 +245,10 @@ else
 fi
 
 # Deployment finish notification
-curl -H "Content-Type: application/json" \
+curl -s -H "Content-Type: application/json" \
   -X POST \
   -d "{\"content\": \"✅ Patch Fleet Bootstrap completed on $(hostname)\"}" \
-  $WEBHOOK_URL
+  "$WEBHOOK_URL"
 
 echo "$(date) - Bootstrap completed successfully on $(hostname)" | tee -a $LOGFILE
 
