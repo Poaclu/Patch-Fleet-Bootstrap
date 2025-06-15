@@ -6,6 +6,7 @@ set -e
 
 TIMEZONE="Europe/Paris"
 WEBHOOK_URL=""
+NO_REBOOT="false"
 
 # Helper function
 print_help() {
@@ -27,6 +28,9 @@ while [[ "$#" -gt 0 ]]; do
         --timezone)
             TIMEZONE="$2"
             shift
+            ;;
+        --no-auto-reboot)
+            NO_REBOOT="true"
             ;;
         --help|-h)
             print_help
@@ -107,7 +111,16 @@ Unattended-Upgrade::AutoFixInterruptedDpkg "true";
 Unattended-Upgrade::MinimalSteps "true";
 Unattended-Upgrade::InstallOnShutdown "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
-Unattended-Upgrade::Automatic-Reboot "true";
+EOF
+
+# Handle auto-reboot flag
+if [[ "$NO_REBOOT" == "true" ]]; then
+  echo 'Unattended-Upgrade::Automatic-Reboot "false";' >> /etc/apt/apt.conf.d/50unattended-upgrades
+else
+  echo 'Unattended-Upgrade::Automatic-Reboot "true";' >> /etc/apt/apt.conf.d/50unattended-upgrades
+fi
+
+cat <<'EOF' >> /etc/apt/apt.conf.d/50unattended-upgrades
 Unattended-Upgrade::Automatic-Reboot-Time "04:00";
 Unattended-Upgrade::Verbose "true";
 Unattended-Upgrade::Allow-downgrade "false";

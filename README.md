@@ -33,18 +33,14 @@ curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/p
 ✅ Runs fully locally with no webhook integration (See bellow for more info)
 ✅ Fully ready in seconds
 
-### Install with webhook integration (full monitoring mode)
+### Full install with all options (webhook + timezone + disable auto-reboot)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL"
+curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL" --timezone "Europe/Paris" --no-auto-reboot
 ```
 ✅ Enables deployment notifications & daily healthcheck error alerts
 ✅ Supports Discord, Notifiarr, Gotify, Shoutrrr, and other webhook systems (See bellow for formats, etc.)
-
-## Install with webhook + timezone override
-```bash
-curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL" --timezone "Europe/Paris"
-```
-By default, timezone is set to Europe/Paris if not provided.
+✅ Timezone option (defaults to Europe/Paris)
+✅ Auto-reboot enabled by default unless --no-auto-reboot is specified (usefull for certain servers)
 
 ## 🔧 Webhook Support
 
