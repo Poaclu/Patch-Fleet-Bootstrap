@@ -22,19 +22,27 @@ The universal unattended-upgrades bootstrapper — fully automatic vendor detect
 
 ## 🚀 Usage
 
-### Minimal install
+### Minimal install (fully offline mode — no webhook)
 
 ```bash
-sudo ./patch-bootstrap.sh --webhook "YOUR_WEBHOOK_URL"
+curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash
 ```
 
 ✅ Automatically detects all APT vendors
 ✅ Builds correct unattended-upgrades config
+✅ Runs fully locally with no webhook integration (See bellow for more info)
 ✅ Fully ready in seconds
 
-### Optional timezone override
+### Install with webhook integration (full monitoring mode)
 ```bash
-sudo ./patch-bootstrap.sh --webhook "YOUR_WEBHOOK_URL" --timezone "America/New_York"
+curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL"
+```
+✅ Enables deployment notifications & daily healthcheck error alerts
+✅ Supports Discord, Notifiarr, Gotify, Shoutrrr, and other webhook systems (See bellow for formats, etc.)
+
+## Install with webhook + timezone override
+```bash
+curl -fsSL https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL" --timezone "Europe/Paris"
 ```
 By default, timezone is set to Europe/Paris if not provided.
 

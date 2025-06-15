@@ -11,8 +11,8 @@ WEBHOOK_URL=""
 print_help() {
   echo "Usage: sudo ./patch-bootstrap.sh --webhook <url> [--timezone <tz>]"
   echo
-  echo "Arguments:"
-  echo "  --webhook   Webhook URL (Discord, Notifiarr, Gotify, etc.) (required)"
+  echo "Arguments (all optional):"
+  echo "  --webhook   Webhook URL (Discord, Notifiarr, Gotify, etc.)"
   echo "  --timezone  System timezone (optional, default: Europe/Paris)"
   echo "  --help      Show this help"
 }
@@ -41,11 +41,11 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Require webhook param
-if [[ -z "$WEBHOOK_URL" ]]; then
-    echo "Error: --webhook is required"
-    print_help
-    exit 1
+if [[ -n "$WEBHOOK_URL" ]]; then
+  curl -s -H "Content-Type: application/json" \
+    -X POST \
+    -d "{\"content\": \"🚀 Patch Bootstrap deployment started on $(hostname)\"}" \
+    "$WEBHOOK_URL"
 fi
 
 # Light sanity check (must look like URI schema)
@@ -153,7 +153,11 @@ chmod +x /usr/local/bin/uu-daily-healthcheck
 # Install Discord alert (generic webhook)
 cat << EOF > /usr/local/bin/uu-discord-alert
 #!/bin/bash
-WEBHOOK_URL="$WEBHOOK_URL"
+if [[ -n "$WEBHOOK_URL" ]]; then
+  curl ...
+else
+  echo "[timestamp] No webhook configured, skipping notification."
+fi
 TMPFILE=\$(mktemp)
 TIMESTAMP=\$(date "+%Y-%m-%d %H:%M:%S")
 
