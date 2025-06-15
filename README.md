@@ -1,25 +1,30 @@
 # Patch Fleet Bootstrap Installer
 
-**A simple universal server hardening bootstrap script.**
+A fully universal, production-safe fleet bootstrapper for Ubuntu, Debian, VPS, homelab and internal servers.
 
-Deploys:
-- Unattended-upgrades (hardened)
-- Healthcheck system
-- Discord failure notifications
-- Cron watchdog
-- Universal systemd compatibility (VPS + homelab safe)
-- Fully portable across Ubuntu, Debian, VPS providers, Proxmox nodes, and more
-
-## ✅ Usage
-
-### ⚠️ Requirements:
-
-- Ubuntu / Debian based systems
-- `sudo` access
+Built for fully unattended server hardening, monitoring, and upgrade management — with webhook notifications compatible with Discord, Notifiarr, Gotify, Shoutrrr, and others.
 
 ---
 
-### 🖥 Install via GitHub (one-liner):
+## ✨ Features
+
+- ✅ Hardened `unattended-upgrades` configuration
+- ✅ Fully automatic package upgrades
+- ✅ Auto creation of systemd timers if missing
+- ✅ Healthcheck system
+- ✅ Cron watchdog for stuck package locks
+- ✅ Webhook alerts for upgrade failures
+- ✅ Supports both `crontab` and `bcrontab` (bcron) systems
+- ✅ Works on VPS, bare metal, LXC containers, cloud VMs, home servers, and more
+- ✅ Fully safe to re-run anytime
+- ✅ Simple CLI interface
+
+---
+
+## 🚀 Usage
+
+### Quick one-liner installation
 
 ```bash
-curl -s https://raw.githubusercontent.com/Poaclu/Patch-Fleet-Bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "https://discord.com/api/webhooks/XXX/XXX"
+curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/patch-bootstrap/main/patch-bootstrap.sh | sudo bash -s -- --webhook "YOUR_WEBHOOK_URL"
+
