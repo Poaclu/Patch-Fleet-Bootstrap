@@ -4,7 +4,6 @@
 
 set -e
 
-# Default timezone
 TIMEZONE="Europe/Paris"
 WEBHOOK_URL=""
 
@@ -86,12 +85,26 @@ timedatectl set-timezone "$TIMEZONE"
 # Install unattended-upgrades
 apt update && apt install -y unattended-upgrades apt-listchanges
 
-# Configure unattended-upgrades
-cat << 'EOF' > /etc/apt/apt.conf.d/50unattended-upgrades
+# Auto-detect 3rd party vendors
+echo "Detecting vendor origins..."
+VENDORS=$(apt-cache policy | grep origin | awk '{print $2}' | grep -vi ubuntu | sort | uniq)
+ 
+echo "Detected vendors: $VENDORS" | tee -a $LOGFILE
+ 
+# Build unattended-upgrades config
+cat <<EOF > /etc/apt/apt.conf.d/50unattended-upgrades
 Unattended-Upgrade::Origins-Pattern {
         "origin=Ubuntu,codename=${distro_codename}";
         "origin=Ubuntu,codename=${distro_codename}-security";
         "origin=Ubuntu,codename=${distro_codename}-updates";
+};
+EOF
+ 
+for vendor in $VENDORS; do
+    echo "    \"origin=$vendor\";" >> /etc/apt/apt.conf.d/50unattended-upgrades
+done
+ 
+cat <<'EOF' >> /etc/apt/apt.conf.d/50unattended-upgrades
 };
 
 Unattended-Upgrade::Package-Blacklist {};
